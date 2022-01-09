@@ -1,0 +1,117 @@
+---
+title: "STAT 685 / TCGA PCA"
+author: "Eric Holdaway / eric.holdaway@tamu.edu"
+date: "8/18/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The purpose of this code is to create the PCA plots for the TCGA data set. The hope is that it will allow us to better see the groupings of the variables and allow for a visual check of the accuracy of our results. This is the first attempt and after initial inspection it will be necessary to switch from using ggbiplot package to ggplot2 which will allow for better graphical control.  
+
+### Libraries:  
+ggbiplot
+
+```{r Library, include=FALSE}
+library(ggbiplot)
+```
+
+### Data:  
+Using imputed data set using missForest.  
+
+```{r Data}
+setwd("C:/Users/erich/OneDrive/Documents/School/STAT 685/Data")
+data <- read.csv("Data_Impute_Stage.csv",header=TRUE)
+data_clinic <- read.csv("DataClinic_pca_stage.csv",header=TRUE)
+```
+
+### Data Cleaning:  
+Quick cleaning step to set first column as row names and then remove the first column.  
+
+```{r Data Cleaning 1}
+rownames(data) <- data[,1]
+data <- data[,-1]
+```
+
+Here we are combining all the different Stage IV patients into just one Stage IV group as some of the variants have a small number of patients.  
+
+```{r Data Cleaning 2}
+# For combining all the Stage 4 types into one.
+for(i in 1:length(data_clinic$clinical_stage))
+{
+  if(data_clinic$clinical_stage[i] == "Stage IVA")
+  {
+    data_clinic$clinical_stage[i] <- "Stage IV"
+  }
+  else if(data_clinic$clinical_stage[i] == "Stage IVB")
+  {
+    data_clinic$clinical_stage[i] <- "Stage IV"
+  }
+  else if(data_clinic$clinical_stage[i] == "Stage IVC")
+  {
+    data_clinic$clinical_stage[i] <- "Stage IV"
+  }
+}
+```
+
+```{r Data Cleaning 3}
+# For combining all the Stage 4 types into one.
+for(i in 1:length(data_clinic$lymphovascular_invasion))
+{
+  if(data_clinic$lymphovascular_invasion[i] == 1)
+  {
+    data_clinic$lymphovascular_invasion[i] <- "NO"
+  }
+  else if(data_clinic$lymphovascular_invasion[i] == 2)
+  {
+    data_clinic$lymphovascular_invasion[i] <- "YES"
+  }
+}
+```
+
+### PCA Analysis: Imputed Data.
+First check to see how much each Patient contributes to the total model.  
+
+```{r PCA Analysis 1}
+data_pca <- prcomp(data, center=TRUE, scale.=TRUE)
+ggscreeplot(data_pca)
+```
+
+We can see from the scree plot above that the importance of the principal components quickly drops off but we also notice that it isn't until high PC values which we actually get a cumulative percentage that is high. In fact, it's not until PC66, 66th patient, until we finally get to 70% of the data explained which means that we have relevant information beyond the recommend first four PC values. Most likely we will have some trouble in reducing the dimensions of our data.  
+
+**PCA Grouping: Clinical Stage**
+
+```{r PCA Analysis 2}
+ggbiplot(data_pca, choices=c(1,2), groups=data_clinic$clinical_stage, ellipse=TRUE,var.axes=FALSE)
+ggbiplot(data_pca, choices=c(2,3), groups=data_clinic$clinical_stage, ellipse=TRUE,var.axes=FALSE)
+ggbiplot(data_pca, choices=c(1,3), groups=data_clinic$clinical_stage, ellipse=TRUE,var.axes=FALSE)
+```
+
+From the three PC plots above we can see that the clusters are all mixed together and there is no clear distinction between clusters.  This further verifies that we will need to perform further testing based upon the PC's being so spread out.  
+
+**PCA Grouping: Lymphovascular Invasion**
+
+```{r PCA Analysis 3}
+ggbiplot(data_pca, choices=c(1,2), groups=data_clinic$lymphovascular_invasion, ellipse=TRUE,var.axes=FALSE)
+ggbiplot(data_pca, choices=c(2,3), groups=data_clinic$lymphovascular_invasion, ellipse=TRUE,var.axes=FALSE)
+ggbiplot(data_pca, choices=c(1,3), groups=data_clinic$lymphovascular_invasion, ellipse=TRUE,var.axes=FALSE)
+```
+
+With Lymphovascular Invasion we have the same situation where the clusters are all mixed and there is noc clear distinction between the clusters.  
+
+## Correlation Plot:  
+First attempt at a correlation plot. Will need to clean this up by using ggplot2. I will extract the top 10 PC's in an attempt to see how they correlate.
+
+```{r Demonstration}
+ggbiplot(data_pca, choices=c(1,2), circle=TRUE)
+```
+
+
+
+
+
+
+
+

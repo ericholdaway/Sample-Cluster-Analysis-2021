@@ -1,0 +1,116 @@
+---
+title: "STAT 685 / TCGA missForest Data"
+author: "Eric Holdaway / eric.holdaway@tamu.edu"
+date: "8/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This file is for using the missForest function to impute missing data. Data is saved in a separate file for ease of use later on as it take a good amount of time for it to complete. This code was added later on when the file size started to become too large. There are some redundancies in the code which need to be cleaned up but overall there is no real affect on the performance because of them.  
+
+### Libraries:  
+missForest  
+
+```{r Library,include=FALSE}
+library(missForest)
+```
+
+### Data:  
+
+```{r Data}
+setwd("C:/Users/erich/OneDrive/Documents/School/STAT 685/Data")
+# Had to change the "-" in the PatientsID to "_" so mice would work.
+data_base <- read.csv("DataBase_lymph.csv",header=TRUE)
+data_clinic <- read.csv("DataClinic_lymph.csv",header=TRUE)
+```
+
+### Seperation of data:  
+
+```{r Data Cleaning 1}
+# Creation of gene and variable array's.
+data_base <- data_base[,-1]
+data_variables <- data_base[,1]
+data_genes <- colnames(data_base)
+
+# Transpose the data.
+data_values <- data_base[,-1]
+data_trans <- data_values
+rownames(data_trans) <- data_variables
+```
+
+### Removal of all NA's:  
+
+```{r Data Cleaning 2}
+# Variables for first check.
+keep <- vector()
+perc_na <- vector()
+
+# First check is to find all columns that have nothing but "NA" values and eliminate them.
+# Checing by patient results in no patients removed from list. All have at least some data.
+for(i in 1:(dim(data_trans)[2]))
+{
+  val_true <- table(is.na(data_trans[,i]))[2]
+  perc_na <- append(perc_na,val_true/dim(data_trans)[1])
+}
+
+for(i in 1:(length(perc_na)))
+{
+  if(is.na(perc_na[i]) != "TRUE")
+  {
+    keep <- append(keep,i)
+  }
+}
+
+# All columns with all "NA" values have been removed.
+data_keep <- data_trans[,keep]
+data_genes <- data_genes[keep]
+```
+
+### Removal of Patients with 60% or more NA's removed:  
+
+```{r Data Cleaning 3}
+# Variables for second check, percentage level to keep.
+perc_na <- vector()
+
+# Second check.
+for(i in 1:(dim(data_keep)[2]))
+{
+  val_true <- table(is.na(data_keep[,i]))[2]
+  perc_na <- append(perc_na,val_true/dim(data_keep)[1])
+}
+
+keep <- which(perc_na < 0.60)
+
+# Completed data set with only columns with less than 60% NA's remaining.
+# Data is missing gene names.
+data_keep <- data_keep[,keep]
+data_genes <- data_genes[keep]
+
+
+# Converting array to workable data frame.
+data_keep <- as.data.frame(data_keep)
+
+# For loop to convert all columns to numeric.
+for(i in 1:dim(data_keep)[2])
+{
+ data_keep[,i] <- as.numeric(data_keep[,i]) 
+}
+
+colnames(data_keep) <- data_genes
+rownames(data_keep) <- data_variables
+
+# Creation of two data_keep objects for different testing.
+data_keep_df <- data_keep
+data_keep_matrix <- as.matrix(data_keep)
+```
+
+
+### Imputation: MissForrest  
+
+```{r Imputation missForrest}
+test <- missForest(data_keep_matrix, ntree=100, maxiter=10)
+write.csv(test$ximp,"C:/Users/erich/OneDrive/Documents/School/STAT 685/Data/Data_Impute_lymph.csv")
+```
