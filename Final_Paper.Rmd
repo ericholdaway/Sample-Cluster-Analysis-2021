@@ -1,0 +1,69 @@
+---
+title: "Cluster Analysis Comparison:"
+description: | 
+  A Dive into Cluster Analysis
+date: August 24, 2021
+author:
+  - name: "Eric Holdaway"
+    url: https://github.com/ericholdaway
+    affiliation: Texas A&M University
+    affiliation_url: https://www.tamu.edu
+output: radix::radix_article
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Purpose:  
+
+The ultimate purpose of this project was to learn about clustering and if possible try to achieve some tangible results using real data. To achieve this goal, we started off trying to reproduce the results from a few papers in different fields. We met with various results in this endeavor and consider the paper which I mainly focused on to still be a work-in-progress. Next, we took a TCGA data set and started applying what we learned from the initial papers to a real data set. The TCGA data set was a great example of a what most real data sets look like and as such we started to work through the problems faced when dealing with more troublesome data sets.  
+
+### Documents:  
+
+Below I have listed all documents created for this project proper order. While some of them can be ran independently, some do require at least one previous document to have been run in R before it will work properly. Those which can be ran independently are marked as such.  
+
+**R Code:**
+Boluki.Rmd (Independent)  
+Meta_Data_Cleaner.Rmd (Independent)  
+TCGA_miss_lymph.Rmd  
+TCGA_miss_stage.Rmd  
+TCGA_Pheat_lymph.Rmd  
+TCGA_Pheat_stage.Rmd  
+TCGA_PCA.Rmd  
+
+**Data:**  
+2246MIMAT.csv
+324ClinicalData.txt (Meta Data)
+
+### Method:  
+
+I have included a quick breakdown of the purpose of each document and the overall results. There are additional comments in each document which follows along with the code itself.  
+
+**Boluki**  
+This document is what covers my attempt at reproducing the results from the paper produced by Dr. Boluki. It entails a looping code which calculates the average Empirical Error of six different clustering techniques and graphs the results at the end of the document. There is three different things that need to be fixed in order to make it similar enough to Boluki in order to verify his results.  
+
+**Meta_Data_Cleaner.Rmd**  
+As the name suggest this code is specifically for cleaning up the Meta Data file and making any adjustments that were needed.  
+
+**TCGA_miss_lymph.Rmd**  
+This file was used solely to use missForest imputation technique on our missing data for cluster analysis comparison with Lymphovascular Invasion.  
+
+**TCGA_miss_stage.Rmd**  
+This file was used solely to use missForest imputation technique on our missing data for cluster analysis comparison with Clinical Stage. It is different than the previous, Lymphovascular Invasion, only in the fact that a few patients were removed due to them having missing data in clinical stage of their meta data.  
+**TCGA_Pheat_lymph.Rmd**  
+In this file there is a little extra data cleaning (redundant and can be cleaned up) before creating Pheatmaps and indexing values for three different clustering techniques on four different conditions of the data set.  
+For Lymphovascular Invasion we do not find any visual nor numeric clues as to there being an underlying relationship between it and our patients. That being said, the cluster positions and relative size remain fairly constant throughout the analysis which leads me to think that while we didn't find a direct correlation, our analysis technique doesn't appear to affect the results very much and there may be a more complex relationship to be found.  
+
+**TCGA_Pheat_stage.Rmd**  
+In this file there is a little extra data cleaning (redundant and can be cleaned up) before creating Pheatmaps and indexing values for three different clustering techniques on four different conditions of the data set.  
+For Clinical Stage we had very similar visuals results from the Pheatmap as we did for Lymphovascular Invasion, but the one difference is that the cluster sizes and position change drastically based upon how we handled the data, leading me to think that we will need to be careful in interpreting any results which we may get with this cluster analysis.  
+There was one big surprise in this file, we noticed that the clustering technique Fuzzy C-Means actually produced a positive result and appeared to be able to pick out the different clusters very well. This was just a numeric result and as such it will need to be followed up with visual/graphical checks along with more research into the technique itself to ensure the accuracy of the results.  
+
+**TCGA_PCA.Rmd**  
+In the PCA file we performed principle component analysis for both Lymphovascular Invasion and Clinical Stage clustering. Both sets show the cluster to be very heavily mixed with almost no distinction between the various clusters. The result isn't very surprising as almost all of our techniques for clustering our data yielded zero results. It does raise more questions and why the fuzzy c-means technique was very successful for one of the techniques and just one of them. Lastly from the Scree plot we see the information in the data is spread throughout the data and not just contained in the first few principle components, which warrants further research and investigation into the topic.  
+
+
+### Conclusion:  
+
+When looking at everything that I have done so far, I feel that I have been very successful and completed a large amount. We spent most of our time looking at the initial papers and working on reproducing their results before moving on to the TCGA data set. While necessary, this has given us very little time to explore the data set as we would like. There is still a long ways to go, and we now appear to be making progress on the data set in possibly finding a clustering technique which is able to cluster patients by what clinical stage there cancer is in. I look forward to continuing my work on this project and hope that we will be able to be successful in our endeavor.  
